@@ -5,7 +5,7 @@ from langchain_core.documents import Document
 from langchain_text_splitters import MarkdownHeaderTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
-from src.llm import get_llm
+from src.llm import get_llm, get_secret
 
 load_dotenv()
 
@@ -13,9 +13,10 @@ CHROMA_DIR = os.path.join("data", "chroma_db")
 POLICY_DIR = os.path.join("data", "policies")
 
 def get_vectorstore():
+    google_api_key = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/gemini-embedding-001",
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        google_api_key=google_api_key,
     )
 
     if os.path.exists(CHROMA_DIR) and os.listdir(CHROMA_DIR):
