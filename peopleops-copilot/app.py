@@ -1,5 +1,6 @@
 import os
 import sys
+import streamlit as st
 
 # Ensure working directory and sys.path are set to this directory (peopleops-copilot)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -7,7 +8,14 @@ os.chdir(BASE_DIR)
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-import streamlit as st
+# Load Streamlit Cloud Secrets into environment variables if available
+try:
+    for key, val in st.secrets.items():
+        if key not in os.environ:
+            os.environ[key] = str(val)
+except Exception:
+    pass
+
 from src.agent import run_copilot
 
 st.set_page_config(
