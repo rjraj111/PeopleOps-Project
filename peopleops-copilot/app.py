@@ -29,6 +29,25 @@ st.caption("Autonomous HR Policy, Leave & Expense Reimbursement Assistant")
 
 # Sidebar with Quick Demo Prompts & Employee Context
 with st.sidebar:
+    st.header("🔑 API Status")
+    from src.llm import get_secret
+    detected_gemini_key = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
+    if detected_gemini_key:
+        st.success("🟢 Gemini API Key Connected")
+    else:
+        st.warning("🔴 Gemini API Key Not Found")
+        manual_key = st.text_input(
+            "Enter Google API Key manually:",
+            type="password",
+            placeholder="Paste your API key here...",
+            key="manual_gemini_key",
+        )
+        if manual_key:
+            os.environ["GOOGLE_API_KEY"] = manual_key.strip()
+            st.session_state["GOOGLE_API_KEY"] = manual_key.strip()
+            st.rerun()
+
+    st.divider()
     st.header("🏢 Employee Context")
     active_emp = st.selectbox(
         "Select Active Employee ID",

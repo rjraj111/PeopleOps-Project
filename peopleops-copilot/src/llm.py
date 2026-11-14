@@ -6,15 +6,36 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 
 def get_secret(key: str, default=None):
+    # 1. Direct environment variable
     val = os.getenv(key)
-    if not val:
-        try:
-            import streamlit as st
-            if hasattr(st, "secrets") and key in st.secrets:
-                val = str(st.secrets[key])
-        except Exception:
-            pass
-    return val or default
+    if val:
+        return val
+
+    # 2. Case-insensitive environment variable check
+    for env_k, env_v in os.environ.items():
+        if env_k.strip().upper() == key.strip().upper() and env_v:
+            return env_v
+
+    # 3. Streamlit secrets & session state
+    try:
+        import streamlit as st
+        if hasattr(st, "session_state") and key in st.session_state and st.session_state[key]:
+            return str(st.session_state[key])
+
+        if hasattr(st, "secrets"):
+            if key in st.secrets and st.secrets[key]:
+                return str(st.secrets[key])
+            for s_k, s_v in st.secrets.items():
+                if s_k.strip().upper() == key.strip().upper() and s_v:
+                    return str(s_v)
+                if isinstance(s_v, dict):
+                    for sub_k, sub_v in s_v.items():
+                        if sub_k.strip().upper() == key.strip().upper() and sub_v:
+                            return str(sub_v)
+    except Exception:
+        pass
+
+    return default
 
 def get_llm():
     google_api_key = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
