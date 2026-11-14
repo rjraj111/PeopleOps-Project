@@ -66,7 +66,7 @@ def get_llm():
         )
 
     if primary_llm and fallback_llm:
-        return primary_llm.with_fallbacks([fallback_llm])
+        return primary_llm.with_fallbacks([fallback_llm], exceptions_to_handle=(Exception,))
     elif primary_llm:
         return primary_llm
     elif fallback_llm:
