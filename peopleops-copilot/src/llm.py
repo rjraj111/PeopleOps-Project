@@ -6,10 +6,11 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 
 def get_llm():
-    # Primary Model: Google Gemini (Free Tier)
+    # Primary Model: Google Gemini (Optimized for low latency)
     primary_llm = ChatGoogleGenerativeAI(
         model="gemini-3.8-flash",
         temperature=0,
+        thinking_budget=0,
         google_api_key=os.getenv("GOOGLE_API_KEY"),
     )
 

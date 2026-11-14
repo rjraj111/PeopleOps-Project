@@ -1,3 +1,12 @@
+import os
+import sys
+
+# Ensure working directory and sys.path are set to this directory (peopleops-copilot)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASE_DIR)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import streamlit as st
 from src.agent import run_copilot
 
