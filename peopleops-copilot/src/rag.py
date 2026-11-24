@@ -12,12 +12,15 @@ load_dotenv()
 CHROMA_DIR = os.path.join("data", "chroma_db")
 POLICY_DIR = os.path.join("data", "policies")
 
-def get_vectorstore():
-    google_api_key = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/gemini-embedding-001",
-        google_api_key=google_api_key,
+def _build_embeddings(model_name: str, api_key: str):
+    return GoogleGenerativeAIEmbeddings(
+        model=model_name,
+        google_api_key=api_key,
     )
+
+def get_vectorstore(model_name: str = "models/gemini-embedding-001"):
+    google_api_key = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
+    embeddings = _build_embeddings(model_name, google_api_key)
 
     if os.path.exists(CHROMA_DIR) and os.listdir(CHROMA_DIR):
         return Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
@@ -34,7 +37,7 @@ def get_vectorstore():
         splits = markdown_splitter.split_text(content)
         for split in splits:
             raw_sec = split.metadata.get("Section", "General")
-            sec_short = raw_sec.split(":")[0].strip()  # Extracts 'Sec 1', 'Sec 2', etc.
+            sec_short = raw_sec.split(":")[0].strip()
             docs.append(
                 Document(
                     page_content=split.page_content,
@@ -50,17 +53,18 @@ def get_vectorstore():
     return vectorstore
 
 def answer_policy_question(query: str) -> str:
-    vectorstore = get_vectorstore()
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-    retrieved_docs = retriever.invoke(query)
+    try:
+        vectorstore = get_vectorstore("models/gemini-embedding-001")
+        retrieved_docs = vectorstore.as_retriever(search_kwargs={"k": 3}).invoke(query)
+    except Exception:
+        vectorstore = get_vectorstore("models/text-embedding-004")
+        retrieved_docs = vectorstore.as_retriever(search_kwargs={"k": 3}).invoke(query)
 
     if not retrieved_docs:
         return "I'm not able to answer that request. Not found in policy. Please contact your HR team directly for further assistance."
 
     context_blocks = []
     for doc in retrieved_docs:
-        src = doc.metadata.get("source", "unknown.md")
-        sec = doc.metadata.get("section", "Sec 1")
         context_blocks.append(f"\n{doc.page_content}")
 
     context_text = "\n\n---\n\n".join(context_blocks)
