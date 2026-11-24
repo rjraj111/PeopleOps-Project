@@ -22,7 +22,7 @@ def get_llm():
     openrouter_key = get_secret("OPENROUTER_API_KEY")
 
     primary_llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model="gemini-4-hydrogen",
         temperature=0,
         api_key=google_key,
     )
