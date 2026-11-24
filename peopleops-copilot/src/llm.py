@@ -43,30 +43,23 @@ def get_llm():
     google_key = get_secret("GOOGLE_API_KEY")
     openrouter_key = get_secret("OPENROUTER_API_KEY")
 
-    primary_llm = ChatGoogleGenerativeAI(
+    gemini_llm = ChatGoogleGenerativeAI(
         model="gemini-3.8-flash",
         temperature=0,
-        max_retries=1,
+        max_retries=0,
+        timeout=8,
         api_key=google_key,
     )
 
-    fallbacks = [
-        ChatGoogleGenerativeAI(
-            model="gemini-4-hydrogen",
+    if openrouter_key:
+        openrouter_llm = ChatOpenAI(
+            model="openrouter/free",
             temperature=0,
             max_retries=1,
-            api_key=google_key,
+            timeout=15,
+            api_key=openrouter_key,
+            base_url="https://openrouter.ai/api/v1",
         )
-    ]
+        return ResilientLLM(openrouter_llm, [gemini_llm])
 
-    if openrouter_key:
-        fallbacks.append(
-            ChatOpenAI(
-                model="openrouter/free",
-                temperature=0,
-                api_key=openrouter_key,
-                base_url="https://openrouter.ai/api/v1",
-            )
-        )
-
-    return ResilientLLM(primary_llm, fallbacks)
+    return ResilientLLM(gemini_llm, [])
