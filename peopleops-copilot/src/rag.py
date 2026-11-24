@@ -1,4 +1,4 @@
-﻿import os
+import os
 import glob
 from dotenv import load_dotenv
 from langchain_core.documents import Document
@@ -65,14 +65,16 @@ def answer_policy_question(query: str) -> str:
 
     context_blocks = []
     for doc in retrieved_docs:
-        context_blocks.append(f"\n{doc.page_content}")
+        source = doc.metadata.get("source", "HR Policy")
+        section = doc.metadata.get("section", "General")
+        context_blocks.append(f"[Source: {source}, {section}]\n{doc.page_content}")
 
     context_text = "\n\n---\n\n".join(context_blocks)
 
     prompt = f"""You are PeopleOps Copilot, an internal HR policy assistant.
 Answer the user's question strictly using ONLY the provided policy context below.
 Rules:
-1. You MUST include inline citations in the exact format at the end of relevant sentences.
+1. You MUST include inline citations in the exact format [filename, Section] (for example: [employee_leave_policy.md, Sec 1]) at the end of relevant sentences.
 2. If the answer cannot be found in the context, reply exactly: "I'm not able to answer that request. Not found in policy. Please contact your HR team directly for further assistance."
 3. Be concise, accurate, and helpful.
 

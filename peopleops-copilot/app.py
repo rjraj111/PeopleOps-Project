@@ -32,10 +32,15 @@ with st.sidebar:
     st.header("🔑 API Status")
     from src.llm import get_secret
     detected_gemini_key = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
-    if detected_gemini_key:
+    detected_openrouter_key = get_secret("OPENROUTER_API_KEY")
+    if detected_openrouter_key and detected_gemini_key:
+        st.success("🟢 OpenRouter + Gemini Connected")
+    elif detected_gemini_key:
         st.success("🟢 Gemini API Key Connected")
+    elif detected_openrouter_key:
+        st.success("🟢 OpenRouter API Key Connected")
     else:
-        st.warning("🔴 Gemini API Key Not Found")
+        st.warning("🔴 API Key Not Found")
         manual_key = st.text_input(
             "Enter Google API Key manually:",
             type="password",
@@ -95,6 +100,7 @@ if "prefill_prompt" in st.session_state:
     user_input = st.session_state.pop("prefill_prompt")
 
 if user_input:
+    prior_history = list(st.session_state.messages)
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.markdown(user_input)
@@ -102,7 +108,11 @@ if user_input:
     with st.chat_message("assistant"):
         with st.spinner("Consulting HR policies & database..."):
             try:
-                reply = run_copilot(user_input)
+                reply = run_copilot(
+                    user_input,
+                    chat_history=prior_history,
+                    active_employee_id=emp_id,
+                )
             except Exception as e:
                 reply = f"⚠️ Error processing request: {str(e)}"
             st.markdown(reply)

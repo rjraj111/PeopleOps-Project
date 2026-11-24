@@ -61,3 +61,13 @@ peopleops-copilot/
    ```bash
    python data/seed_db.py
    ```
+
+5. **Run the Application**:
+   - **Streamlit Web UI** (recommended for interactive demo):
+     ```bash
+     streamlit run app.py
+     ```
+   - **FastAPI REST Backend** (optional API & Swagger docs at `/docs`):
+     ```bash
+     uvicorn api:app --reload
+     ```

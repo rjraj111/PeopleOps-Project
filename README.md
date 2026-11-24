@@ -39,3 +39,12 @@ A workspace repository for PeopleOps Copilot — an autonomous internal HR Polic
    ```bash
    python data/seed_db.py
    ```
+
+6. **Run the App**:
+   ```bash
+   # Interactive Streamlit UI
+   streamlit run app.py
+
+   # Optional: FastAPI REST API (Swagger UI at http://127.0.0.1:8000/docs)
+   uvicorn api:app --reload
+   ```

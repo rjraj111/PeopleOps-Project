@@ -1,4 +1,4 @@
-﻿import os
+import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
@@ -40,14 +40,14 @@ class ResilientLLM:
         return getattr(self.chain, name)
 
 def get_llm():
-    google_key = get_secret("GOOGLE_API_KEY")
+    google_key = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
     openrouter_key = get_secret("OPENROUTER_API_KEY")
 
     gemini_llm = ChatGoogleGenerativeAI(
         model="gemini-3.8-flash",
         temperature=0,
-        max_retries=0,
-        timeout=8,
+        max_retries=1,
+        timeout=15,
         api_key=google_key,
     )
 
@@ -55,8 +55,8 @@ def get_llm():
         openrouter_llm = ChatOpenAI(
             model="openrouter/free",
             temperature=0,
-            max_retries=1,
-            timeout=15,
+            max_retries=2,
+            timeout=20,
             api_key=openrouter_key,
             base_url="https://openrouter.ai/api/v1",
         )

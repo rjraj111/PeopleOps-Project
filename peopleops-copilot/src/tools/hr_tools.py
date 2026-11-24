@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sqlite3
 import uuid
 from langchain_core.tools import tool
@@ -100,16 +100,33 @@ def submit_expense_claim(employee_id: str, category: str, amount_bdt: float, des
 
     emp_name = row[0]
     claim_id = f"CLM-{uuid.uuid4().hex[:6].upper()}"
+    cat_clean = category.strip()
+    cat_lower = cat_clean.lower()
 
-    # Policy Rule (Sec 3): Claims > 5,000 BDT require explicit human manager approval
+    # Policy Rules (Sec 1 & Sec 3): Category caps + >5,000 BDT High-Risk Escalation
+    category_caps = {
+        "internet": (2000.0, "Internet & Home Office Utility cap: 2,000 BDT/month"),
+        "home office": (2000.0, "Internet & Home Office Utility cap: 2,000 BDT/month"),
+        "client meals": (4000.0, "Client Meals & Entertainment cap: 4,000 BDT/meeting"),
+        "entertainment": (4000.0, "Client Meals & Entertainment cap: 4,000 BDT/meeting"),
+    }
+
+    cap_exceeded_reason = None
+    for key, (cap_limit, cap_label) in category_caps.items():
+        if key in cat_lower and amount_bdt > cap_limit:
+            cap_exceeded_reason = cap_label
+            break
+
     if amount_bdt > 5000:
         status = "Pending Manager Approval (High-Risk Escalation: >5,000 BDT)"
+    elif cap_exceeded_reason:
+        status = f"Pending Manager Approval (Exceeds Policy Limit — {cap_exceeded_reason})"
     else:
         status = "Approved"
 
     cursor.execute(
         "INSERT INTO expense_claims (claim_id, employee_id, category, amount_bdt, description, status) VALUES (?, ?, ?, ?, ?, ?)",
-        (claim_id, emp_id, category.strip(), amount_bdt, description.strip(), status),
+        (claim_id, emp_id, cat_clean, amount_bdt, description.strip(), status),
     )
     conn.commit()
     conn.close()

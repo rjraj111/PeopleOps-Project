@@ -1,4 +1,4 @@
-﻿from langchain_core.tools import tool
+from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import create_react_agent
 from src.llm import get_llm
@@ -36,9 +36,34 @@ def build_agent():
     llm = get_llm()
     return create_react_agent(llm, tools=TOOLS, prompt=SystemMessage(content=SYSTEM_PROMPT))
 
-def run_copilot(user_message: str) -> str:
+def run_copilot(
+    user_message: str,
+    chat_history: list[dict] | None = None,
+    active_employee_id: str | None = None,
+) -> str:
     agent = build_agent()
-    result = agent.invoke({"messages": [("user", user_message)]})
+    messages = []
+
+    if active_employee_id:
+        messages.append(
+            (
+                "system",
+                f"The currently signed-in employee in the UI session is {active_employee_id}. "
+                f"If the user says 'my', 'me', or omits an employee ID for a personal request, use {active_employee_id}.",
+            )
+        )
+
+    if chat_history:
+        # Pass recent conversation turns (up to last 8 messages) for follow-up context
+        for msg in chat_history[-8:]:
+            role = msg.get("role")
+            content = msg.get("content", "")
+            if role in ("user", "assistant") and content:
+                messages.append((role, content))
+
+    messages.append(("user", user_message))
+
+    result = agent.invoke({"messages": messages})
     final_msg = result["messages"][-1]
     content = final_msg.content
     if isinstance(content, list):
