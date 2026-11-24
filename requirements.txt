@@ -8,3 +8,7 @@ langchain-chroma
 langgraph
 chromadb
 python-dotenv
+
+fastapi
+uvicorn
+msgpack
