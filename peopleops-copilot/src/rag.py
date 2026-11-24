@@ -1,4 +1,4 @@
-import os
+﻿import os
 import glob
 from dotenv import load_dotenv
 from langchain_core.documents import Document

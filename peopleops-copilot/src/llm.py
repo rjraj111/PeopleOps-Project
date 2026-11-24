@@ -1,4 +1,4 @@
-import os
+﻿import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
@@ -43,14 +43,14 @@ def get_llm():
 
     if not google_api_key and not openrouter_api_key:
         raise ValueError(
-            "API key পাওয়া যায়নি! Streamlit Cloud-এর App Settings -> Secrets এ GOOGLE_API_KEY যুক্ত করুন。"
+            "API key à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿! Streamlit Cloud-à¦à¦° App Settings -> Secrets à¦ GOOGLE_API_KEY à¦¯à§à¦•à§à¦¤ à¦•à¦°à§à¦¨ã€‚"
         )
 
-    # Primary Model: Google Gemini (gemini-2.0-flash / gemini-1.5-flash)
+    # Primary Model: Google Gemini (gemini-3.8-flash / gemini-1.5-flash)
     primary_llm = None
     if google_api_key:
         primary_llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
+            model="gemini-3.8-flash",
             temperature=0,
             google_api_key=google_api_key,
         )
@@ -72,4 +72,4 @@ def get_llm():
     elif fallback_llm:
         return fallback_llm
     else:
-        raise ValueError("কোনো কার্যকরী LLM কনফিগার করা সম্ভব হয়নি।")
+        raise ValueError("à¦•à§‹à¦¨à§‹ à¦•à¦¾à¦°à§à¦¯à¦•à¦°à§€ LLM à¦•à¦¨à¦«à¦¿à¦—à¦¾à¦° à¦•à¦°à¦¾ à¦¸à¦®à§à¦­à¦¬ à¦¹à¦¯à¦¼à¦¨à¦¿à¥¤")
