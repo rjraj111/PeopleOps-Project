@@ -24,17 +24,23 @@ def get_llm():
     primary_llm = ChatGoogleGenerativeAI(
         model="gemini-4-hydrogen",
         temperature=0,
+        max_retries=1,
         api_key=google_key,
     )
 
     if openrouter_key:
-        print("✅ OpenRouter Fallback LLM (Llama 3.3 70B) is ACTIVE")
-        fallback_llm = ChatOpenAI(
+        fallback_1 = ChatOpenAI(
             model="meta-llama/llama-3.3-70b-instruct:free",
             temperature=0,
             api_key=openrouter_key,
             base_url="https://openrouter.ai/api/v1",
         )
-        return primary_llm.with_fallbacks([fallback_llm])
+        fallback_2 = ChatOpenAI(
+            model="google/gemma-3-27b-it:free",
+            temperature=0,
+            api_key=openrouter_key,
+            base_url="https://openrouter.ai/api/v1",
+        )
+        return primary_llm.with_fallbacks([fallback_1, fallback_2])
 
     return primary_llm
