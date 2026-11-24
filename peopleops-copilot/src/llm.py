@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
-def _get_secret(key: str) -> str | None:
+def get_secret(key: str) -> str | None:
     val = os.getenv(key)
     if val:
         return val
@@ -18,8 +18,8 @@ def _get_secret(key: str) -> str | None:
     return None
 
 def get_llm():
-    google_key = _get_secret("GOOGLE_API_KEY")
-    openrouter_key = _get_secret("OPENROUTER_API_KEY")
+    google_key = get_secret("GOOGLE_API_KEY")
+    openrouter_key = get_secret("OPENROUTER_API_KEY")
 
     primary_llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
