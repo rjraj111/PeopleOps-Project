@@ -17,6 +17,25 @@ def get_secret(key: str) -> str | None:
         pass
     return None
 
+def configure_langsmith() -> bool:
+    """Enable LangSmith tracing automatically whenever a LangSmith/LangChain API key is available."""
+    api_key = get_secret("LANGSMITH_API_KEY") or get_secret("LANGCHAIN_API_KEY")
+    if api_key and not api_key.startswith("your_"):
+        project = get_secret("LANGSMITH_PROJECT") or get_secret("LANGCHAIN_PROJECT") or "PeopleOps-Copilot"
+        endpoint = get_secret("LANGSMITH_ENDPOINT") or get_secret("LANGCHAIN_ENDPOINT") or "https://api.smith.langchain.com"
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGSMITH_TRACING"] = "true"
+        os.environ["LANGCHAIN_API_KEY"] = api_key
+        os.environ["LANGSMITH_API_KEY"] = api_key
+        os.environ["LANGCHAIN_PROJECT"] = project
+        os.environ["LANGSMITH_PROJECT"] = project
+        os.environ["LANGCHAIN_ENDPOINT"] = endpoint
+        os.environ["LANGSMITH_ENDPOINT"] = endpoint
+        return True
+    return False
+
+configure_langsmith()
+
 class ResilientLLM:
     def __init__(self, primary, fallbacks):
         self.primary = primary

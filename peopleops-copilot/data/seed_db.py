@@ -9,6 +9,7 @@ def seed_database():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
+    cursor.execute("DROP TABLE IF EXISTS notifications")
     cursor.execute("DROP TABLE IF EXISTS expense_claims")
     cursor.execute("DROP TABLE IF EXISTS leave_records")
     cursor.execute("DROP TABLE IF EXISTS employees")
@@ -54,6 +55,21 @@ def seed_database():
     )
     """)
 
+    # 4. Notifications Table
+    cursor.execute("""
+    CREATE TABLE notifications (
+        notification_id TEXT PRIMARY KEY,
+        employee_id TEXT NOT NULL,
+        related_id TEXT,
+        notif_type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        is_read INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+    )
+    """)
+
     # Seed primary demo users
     demo_users = [
         ("EMP-101", "Jahedul Islam", "Engineering", "Software Engineer", 2, 85000.0, 12, 8, 14),
@@ -76,9 +92,13 @@ def seed_database():
 
     cursor.executemany("INSERT INTO employees VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", bulk_employees)
 
-    # Seed initial sample records
+    # Seed initial sample records (including pending High-Risk cases for Admin Panel demo)
     cursor.execute("INSERT INTO expense_claims VALUES ('CLM-1001', 'EMP-101', 'Internet', 1200.0, 'Monthly broadband bill', 'Approved')")
+    cursor.execute("INSERT INTO expense_claims VALUES ('CLM-1002', 'EMP-102', 'Client Meals', 7500.0, 'Enterprise client dinner with 6 stakeholders', 'Pending Manager Approval (High-Risk Escalation: >5,000 BDT)')")
     cursor.execute("INSERT INTO leave_records VALUES ('LV-1001', 'EMP-101', 'Annual', 3, 'Family trip', 'Approved')")
+    cursor.execute("INSERT INTO leave_records VALUES ('LV-1002', 'EMP-102', 'Annual', 5, 'International family vacation', 'Pending Manager Approval (High-Risk Escalation: >3 days)')")
+    cursor.execute("INSERT INTO notifications VALUES ('NTF-1001', 'EMP-101', 'LV-1001', 'approved', '✅ Leave Request Approved (LV-1001)', 'Your Annual Leave request for 3 day(s) was auto-approved under standard HR policy.', 0, '2026-11-24 10:30')")
+    cursor.execute("INSERT INTO notifications VALUES ('NTF-1002', 'EMP-102', 'LV-1002', 'info', '⏳ Escalated to HR Admin (LV-1002)', 'Your 5-day Annual Leave request exceeds 3 consecutive days and has been routed to the Admin Panel for manager review.', 0, '2026-11-24 14:15')")
 
     conn.commit()
     conn.close()
